@@ -8,7 +8,7 @@ const VERSION = "2.0.0";
 const SUPABASE_URL = "https://dasxvcpypaqzmuzzfggj.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhc3h2Y3B5cGFxem11enpmZ2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTE0NDIsImV4cCI6MjA5MzQ4NzQ0Mn0.mo8MZkkM-HU8ILv28U9p9g85HxCM-Og95jx9Rfb6OpA";
 const GHL_PAID_TAG = "paid-160-assessment"; // referenced in UI messaging only
-const PURCHASE_URL = "https://hermilliondollarreturn.com/upgrade"; // swap for real checkout URL
+const PURCHASE_URL = "https://dev.hermilliondollarreturn.com/full-report"; // update to hermilliondollarreturn.com/full-report when live
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
