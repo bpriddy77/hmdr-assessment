@@ -8,11 +8,13 @@ export default async function handler(req, res) {
   const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
   const GHL_PAID_TAG = "paid-160-assessment";
 
-  console.log("ENV CHECK — token:", !!GHL_PIT_TOKEN, "| location:", !!GHL_LOCATION_ID, "| loc value:", GHL_LOCATION_ID);
+  console.log("ENV CHECK — token:", !!GHL_PIT_TOKEN, "| location:", !!GHL_LOCATION_ID);
 
   try {
-    // Use GET /contacts with query params — simpler and well-supported
-    const url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email.toLowerCase().trim())}&limit=1`;
+    const cleanEmail = email.toLowerCase().trim();
+
+    // GHL GET /contacts/ uses `query` param (not `email`) for search
+    const url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(cleanEmail)}&limit=5`;
     console.log("Fetching:", url);
 
     const searchRes = await fetch(url, {
@@ -36,17 +38,19 @@ export default async function handler(req, res) {
     console.log("Response keys:", Object.keys(data));
 
     const contacts = data.contacts || data.data || [];
-    console.log("Contacts found:", contacts.length);
+    console.log("Contacts returned:", contacts.length);
 
-    if (contacts.length === 0) {
+    // Filter to exact email match since query is a fuzzy search
+    const contact = contacts.find(c => (c.email || "").toLowerCase() === cleanEmail);
+    console.log("Exact match found:", !!contact, contact ? contact.id : "none");
+
+    if (!contact) {
       return res.status(200).json({ granted: false, reason: "no_contact" });
     }
 
-    const contact = contacts[0];
-    console.log("Contact:", contact.id, contact.email);
     console.log("Tags raw:", JSON.stringify(contact.tags));
 
-    // Handle tags as strings or objects
+    // GHL tags can be strings or objects — handle both
     const tags = (contact.tags || []).map(t => typeof t === "string" ? t : (t.name || ""));
     console.log("Tags normalized:", tags);
 
