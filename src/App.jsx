@@ -3,12 +3,18 @@ import { createClient } from "@supabase/supabase-js";
 
 // ─── VERSION ──────────────────────────────────────────────────────────────────
 const VERSION = "2.0.0";
+const ROOT_IMAGE_BASE = "https://hmdr-assessment.vercel.app/roots";
+
+// Maps root code → hosted image URL
+function rootImageUrl(code) {
+  return `${ROOT_IMAGE_BASE}/${code}.jpg`;
+}
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://dasxvcpypaqzmuzzfggj.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhc3h2Y3B5cGFxem11enpmZ2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTE0NDIsImV4cCI6MjA5MzQ4NzQ0Mn0.mo8MZkkM-HU8ILv28U9p9g85HxCM-Og95jx9Rfb6OpA";
 const GHL_PAID_TAG = "paid-160-assessment"; // referenced in UI messaging only
-const PURCHASE_URL = "https://dev.hermilliondollarreturn.com/full-report"; // update to hermilliondollarreturn.com/full-report when live
+const PURCHASE_URL = "https://hermilliondollarreturn.com/full-report";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -43,13 +49,13 @@ async function ghlVerifyAccess(email) {
   }
 }
 
-async function ghlSaveResults(contactId, taproot, constellation, version) {
+async function ghlSaveResults(contactId, taproot, taprootImageUrl, constellation, constellationImageUrls, version) {
   // Calls our serverless function — GHL token never exposed to browser
   try {
     const res = await fetch("/api/save-results", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contactId, taproot, constellation, version }),
+      body: JSON.stringify({ contactId, taproot, taprootImageUrl, constellation, constellationImageUrls, version }),
     });
     return res.ok;
   } catch (e) {
@@ -1050,10 +1056,13 @@ export default function App() {
 
     // Write results to GHL via serverless function (token protected)
     const rootNames = constellation.map(c => ROOTS[c]?.name || c);
+    const rootImageUrls = constellation.map(c => rootImageUrl(c));
     await ghlSaveResults(
       userInfo.contactId,
       ROOTS[taproot]?.name || taproot,
+      rootImageUrl(taproot),
       rootNames,
+      rootImageUrls,
       VERSION
     );
 
